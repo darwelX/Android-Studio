@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="ciudades_array">
+        <item>Colombia</item>
+        <item>Bolivia</item>
+        <item>Chile</item>
+        <item>Venezuela</item>
+    </string-array>
+</resources>
