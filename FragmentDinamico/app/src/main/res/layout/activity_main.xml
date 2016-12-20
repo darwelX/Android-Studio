@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.darwel.android.ejemplos.fragment.dinamico.MainActivity"
+    android:weightSum="10"
+    android:orientation="horizontal">
+
+    <fragment
+        android:id="@+id/izquierda"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="5"
+        class="com.darwel.android.ejemplos.fragment.dinamico.Izquierda"/>
+
+    <!-- Esta etiqueta es la encargada de contener el Fragment creado por codigo-->
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="5"/>
+</LinearLayout>
