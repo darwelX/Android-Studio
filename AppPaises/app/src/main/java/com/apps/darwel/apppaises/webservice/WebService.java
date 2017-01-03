@@ -11,6 +11,9 @@ import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapPrimitive;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 
 /**
  * Realiza las invocaciones principales del WebService de la App
@@ -28,8 +31,6 @@ public class WebService {
     private final static String METHOD_GMT="GetGMTbyCountry";
     private final static String GET_CURRENCY=WebService.namespace+WebService.SEPARATOR+"GetCurrencyByCountry";
     private final static String METHOD_CURRENCY="GetCurrencyByCountry";
-    private JSONArray resultado = null;
-
 
     public WebService() {
     }
@@ -57,41 +58,124 @@ public class WebService {
                 for(int i=0; i < result.getPropertyCount(); i++){
                     SoapObject countrie = (SoapObject) result.getProperty(i);
                     if(i == (result.getAttributeCount()-1) ){
-                        stringJson+=tagInit+"\"Name\":"+countrie.getProperty(0).toString()+"}";
+                        stringJson+=tagInit+"\"Name\":"+countrie.getProperty(0).toString()+tagEnd;
                     }else{
                         stringJson+=tagInit+"\"Name\":"+countrie.getProperty(0).toString()+"},";
                     }
 
                 }
-                
                 stringJson+="]"+tagEnd;
 
                 JSONObject jsonObject = null;
-                try{
-                    jsonObject = XML.toJSONObject(stringJson);
-                }catch (JSONException ex){
-                    Log.e("error", "Buscar paises SoapObject "+ex.getMessage());
-                }
-
+                jsonObject = XML.toJSONObject(stringJson);
                 JSONArray arrayJson = jsonObject.getJSONArray("Table");
+                Log.i("info","Se retorno un JSONArray en base a un SOAPObject");
                 return arrayJson;
 
             }else if(obj instanceof SoapPrimitive){
-                JSONObject jsonObject = null;
-
-                try{
-                    jsonObject = XML.toJSONObject(envolpe.getResponse().toString());
-                }catch (JSONException ex){
-                    Log.e("error","Buscar paises SoapPrimitive "+ex.getMessage());
-                }
-
-                JSONArray arrayJson = jsonObject.getJSONObject("NewDataSet").getJSONArray("Table");
-                Log.i("info","retorno un JSONArray en base a un SoapPrimitve");
-                return arrayJson;
+                    JSONObject jsonObject = XML.toJSONObject(envolpe.getResponse().toString());
+                    JSONArray arrayJson = jsonObject.getJSONObject("NewDataSet").getJSONArray("Table");
+                    Log.i("info","retorno un JSONArray en base a un SoapPrimitve");
+                    return arrayJson;
+            }else{
+                Log.i("info","no encontro nada Buscar paises");
             }
-        }catch (Exception e){
-            Log.e("error","Buscar paises "+e.getMessage());
+
+        }catch (XmlPullParserException e){
+            Log.e("error","Buscar paises XmlPullParserException "+e.getMessage());
+        }catch (IOException ex){
+            Log.e("error","Buscar paises IOException "+ ex.getMessage());
+        }catch (JSONException ex){
+            Log.e("error","Buscar paises SoapPrimitive "+ex.getMessage());
         }
-        return resultado;
+        return null;
+    }
+
+    public JSONArray getISD(){
+        try{
+            SoapObject request = new SoapObject(WebService.namespace,WebService.METHOD_ISD);
+
+            SoapSerializationEnvelope envolpe = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envolpe.dotNet=true;
+            envolpe.setOutputSoapObject(request);
+
+            HttpTransportSE transport = new HttpTransportSE(WebService.url);
+            transport.call(WebService.GET_ISD,envolpe);
+
+            Object obj = envolpe.getResponse();
+
+            if(obj instanceof SoapObject){
+                String tagInit="{";
+                String tagEnd="}";
+                String jsonString=tagInit+"\"Table\":[";
+                SoapObject result = (SoapObject) obj;
+                SoapObject countrie = (SoapObject) result.getProperty(0);
+                jsonString+=tagInit+"\"Code\":"+countrie.getProperty(0)+tagEnd+"]"+tagEnd;
+                JSONObject jsonObject = XML.toJSONObject(jsonString);
+                JSONArray jsonArray = jsonObject.getJSONArray("Table");
+                Log.i("info","se retorno JSONArray en base a SOAPObject");
+                return jsonArray;
+
+            }else if(obj instanceof SoapPrimitive){
+                JSONObject jsonObject = XML.toJSONObject(envolpe.getResponse().toString());
+                JSONArray jsonArray = jsonObject.getJSONObject("NewDataSet").getJSONArray("Table");
+                Log.i("info","retorno JSONArray en base a SOAPPrimitive");
+                return jsonArray;
+            }else{
+                Log.i("info","No se encontro nada en buscar ISD");
+            }
+
+        }catch (XmlPullParserException ex){
+            Log.e("error","Buscar ISD XmlPullParserException "+ex.getMessage());
+        }catch (IOException ex){
+            Log.e("error","Buscar ISD IOException "+ex.getMessage());
+        }catch (JSONException ex){
+            Log.e("error","Buscar ISD JSONException "+ex.getMessage());
+        }
+
+        return null;
+    }
+
+    public JSONArray getGMT(){
+
+        try{
+            SoapObject request = new SoapObject(WebService.namespace,WebService.METHOD_GMT);
+
+            SoapSerializationEnvelope envolpe = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envolpe.dotNet=true;
+            envolpe.setOutputSoapObject(request);
+
+            HttpTransportSE transport = new HttpTransportSE(WebService.url);
+            transport.call(WebService.GET_GMT,envolpe);
+
+            Object obj = envolpe.getResponse();
+
+            if(obj instanceof SoapObject){
+                String tagInit="{";
+                String tagEnd="}";
+                String jsonString=tagInit+"\"Table\":[";
+                SoapObject soapObject = (SoapObject) obj;
+                SoapObject countrie = (SoapObject)soapObject.getProperty(0);
+                jsonString+=tagInit+"\"GMT\":"+countrie.getProperty(0)+tagEnd+"]"+tagEnd;
+                JSONObject jsonObje = XML.toJSONObject(jsonString);
+                JSONArray jsonArray = jsonObje.getJSONArray("Table");
+                Log.i("info","retornando JSONArray a base de SoapObject");
+                return jsonArray;
+            }else if(obj instanceof SoapPrimitive){
+                JSONObject jsonObject = XML.toJSONObject(envolpe.getResponse().toString());
+                JSONArray jsonArray = jsonObject.getJSONObject("NewDataSet").getJSONArray("Table");
+                Log.i("info","retornando JSONObject a base de SoapPrimitive");
+                return jsonArray;
+            }else{
+                Log.i("info","No se encontro nada en buscar GMT");
+            }
+        }catch (XmlPullParserException ex){
+            Log.e("error","Error XmlPaserException "+ex.getMessage());
+        }catch (IOException ex){
+            Log.e("error","Error IOException "+ex.getMessage());
+        }catch (JSONException ex){
+            Log.e("error","Erro JSONException "+ex.getMessage());
+        }
+        return null;
     }
 }
