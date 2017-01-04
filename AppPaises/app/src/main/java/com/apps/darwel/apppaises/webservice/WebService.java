@@ -111,7 +111,7 @@ public class WebService {
                 String jsonString=tagInit+"\"Table\":["+tagInit;
                 SoapObject result = (SoapObject) obj;
                 SoapObject countrie = (SoapObject) result.getProperty(0);
-                jsonString+=tagInit+"\"Code\":"+countrie.getProperty(0)+tagEnd+"]"+tagEnd;
+                jsonString+=tagInit+"\"code\":"+countrie.getProperty(0)+tagEnd+"]"+tagEnd;
                 JSONObject jsonObject = XML.toJSONObject(jsonString);
                 JSONArray jsonArray = jsonObject.getJSONArray("Table");
                 Log.i("info","se retorno JSONArray en base a SOAPObject");
