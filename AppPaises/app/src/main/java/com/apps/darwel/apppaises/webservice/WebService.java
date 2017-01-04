@@ -52,7 +52,7 @@ public class WebService {
 
                 String tagInit="{";
                 String tagEnd="}";
-                String stringJson=tagInit+"\"Table\":[";
+                String stringJson=tagInit+"\"Table\":["+tagInit;
                 SoapObject result = (SoapObject) obj;
 
                 for(int i=0; i < result.getPropertyCount(); i++){
@@ -91,9 +91,10 @@ public class WebService {
         return null;
     }
 
-    public JSONArray getISD(){
+    public JSONArray getISD(String nameCountry){
         try{
             SoapObject request = new SoapObject(WebService.namespace,WebService.METHOD_ISD);
+            request.addProperty("CountryName",nameCountry);
 
             SoapSerializationEnvelope envolpe = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envolpe.dotNet=true;
@@ -107,7 +108,7 @@ public class WebService {
             if(obj instanceof SoapObject){
                 String tagInit="{";
                 String tagEnd="}";
-                String jsonString=tagInit+"\"Table\":[";
+                String jsonString=tagInit+"\"Table\":["+tagInit;
                 SoapObject result = (SoapObject) obj;
                 SoapObject countrie = (SoapObject) result.getProperty(0);
                 jsonString+=tagInit+"\"Code\":"+countrie.getProperty(0)+tagEnd+"]"+tagEnd;
@@ -136,10 +137,11 @@ public class WebService {
         return null;
     }
 
-    public JSONArray getGMT(){
+    public JSONArray getGMT(String nameCountry){
 
         try{
             SoapObject request = new SoapObject(WebService.namespace,WebService.METHOD_GMT);
+            request.addProperty("CountryName",nameCountry);
 
             SoapSerializationEnvelope envolpe = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envolpe.dotNet=true;
@@ -153,7 +155,7 @@ public class WebService {
             if(obj instanceof SoapObject){
                 String tagInit="{";
                 String tagEnd="}";
-                String jsonString=tagInit+"\"Table\":[";
+                String jsonString=tagInit+"\"Table\":["+tagInit;
                 SoapObject soapObject = (SoapObject) obj;
                 SoapObject countrie = (SoapObject)soapObject.getProperty(0);
                 jsonString+=tagInit+"\"GMT\":"+countrie.getProperty(0)+tagEnd+"]"+tagEnd;
@@ -175,6 +177,52 @@ public class WebService {
             Log.e("error","Error IOException "+ex.getMessage());
         }catch (JSONException ex){
             Log.e("error","Erro JSONException "+ex.getMessage());
+        }
+        return null;
+    }
+
+    public JSONArray getCurrency(String nameCountry){
+        try {
+            SoapObject request = new SoapObject(WebService.namespace, WebService.METHOD_CURRENCY);
+            request.addProperty("CountryName",nameCountry);
+
+            SoapSerializationEnvelope envolpe = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envolpe.dotNet = true;
+            envolpe.setOutputSoapObject(request);
+
+            HttpTransportSE transport = new HttpTransportSE(WebService.url);
+            transport.call(WebService.GET_CURRENCY, envolpe);
+
+            Object obj = envolpe.getResponse();
+
+            if(obj instanceof SoapObject){
+                String tagInit="{";
+                String tagEnd="}";
+                String json = tagInit + "\"Table\":[" + tagInit;
+                SoapObject soapObj = (SoapObject) obj;
+                SoapObject currencyCountry = (SoapObject) soapObj.getProperty(0);
+                json+="\"Name\":"+currencyCountry.getProperty(0)+",";
+                json+="\"CountryCode\":"+currencyCountry.getProperty(1)+",";
+                json+="\"Currency\":"+currencyCountry.getProperty(2)+",";
+                json+="\"CurrencyCode\":"+currencyCountry.getProperty(3)+tagEnd+"]"+tagEnd;
+                JSONObject jsonObj = XML.toJSONObject(json);
+                JSONArray currency = jsonObj.getJSONArray("Table");
+                Log.i("info","retornando JSONArray en base a SoapObject");
+                return currency;
+            }else if(obj instanceof SoapPrimitive){
+                JSONObject jsonObject = XML.toJSONObject(envolpe.getResponse().toString());
+                JSONArray currency = jsonObject.getJSONObject("NewDataSet").getJSONArray("Table");
+                Log.i("info","retornando JSONArray en base a SoapPrimitive");
+                return currency;
+            }else{
+                Log.i("info","no encontro nada en buscar Moneda");
+            }
+        }catch(XmlPullParserException ex){
+            Log.e("error","error XmlPullParserException buscar moneda");
+        }catch(IOException ex){
+            Log.e("error","error IOException buscar moneda");
+        }catch(JSONException ex){
+            Log.e("error","error JSONException buscar moneda");
         }
         return null;
     }
