@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">AppPaises</string>
+
+    <string name="title_list">Países del Mundo</string>
+
+    <string name="menu_next">Siguiente</string>
+    <string name="menu_back">Atras</string>
+    <string name="menu_find">Buscar</string>
 </resources>
