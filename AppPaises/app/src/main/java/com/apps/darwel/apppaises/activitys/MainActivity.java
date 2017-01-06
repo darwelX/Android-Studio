@@ -1,15 +1,19 @@
 package com.apps.darwel.apppaises.activitys;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.apps.darwel.apppaises.R;
 import com.apps.darwel.apppaises.models.Country;
@@ -23,19 +27,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final int MENU_BACK = Menu.FIRST+1;
     private static final int MENU_FIND = Menu.FIRST+2;
     private ListView listCountrys;
+    private TextView empty;
     private ProgressDialog progressDialog;
-    private ArrayList<Country> countrys;
+    private Country[] countrys;
+    private Context context;
 
     private final Handler handler = new Handler(){
         @Override
         public void handleMessage(final Message msg){
             progressDialog.dismiss();
-            if(countrys.size() == 0 || countrys == null){
-
+            if(countrys.length == 0 || countrys == null){
+                empty.setText(R.string.empty_list);
             }else{
-                Country [] arryc = (Country [])countrys.toArray();
-                CountryAdapter adapter = new CountryAdapter(getApplicationContext(),
-                        R.layout.listview_item_row,arryc);
+                CountryAdapter adapter = new CountryAdapter(context,
+                        R.layout.listview_item_row,countrys);
                 View header = (View) getLayoutInflater().inflate(R.layout.list_header_row,null);
                 listCountrys.addHeaderView(header);
                 listCountrys.setAdapter(adapter);
@@ -47,8 +52,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        context=this;
         listCountrys = (ListView) findViewById(R.id.list);
+        empty = (TextView) findViewById(R.id.empty);
     }
 
     @Override
@@ -70,6 +76,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return true;
     }
 
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+
+        switch (item.getItemId()){
+            case MainActivity.MENU_NEXT:
+                Toast.makeText(MainActivity.this, "next", Toast.LENGTH_SHORT).show();
+                return true;
+            case MainActivity.MENU_BACK:
+                Toast.makeText(MainActivity.this, "back", Toast.LENGTH_SHORT).show();
+                return true;
+            case MainActivity.MENU_FIND:
+                Toast.makeText(MainActivity.this, "buscar", Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
     public void loadCountrys(){
 
         final CountryFetcher cf = new CountryFetcher();
@@ -80,7 +104,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         new Thread(){
             @Override
             public void run(){
-                countrys = cf.getCountrys();
+                ArrayList arrListCoun = cf.getCountrys();
+                countrys = new Country[arrListCoun.size()];
+                for(int i = 0; i < arrListCoun.size(); i++){
+                    countrys[i] = (Country) arrListCoun.get(i);
+                }
                 handler.sendEmptyMessage(0);
             }
         }.start();
