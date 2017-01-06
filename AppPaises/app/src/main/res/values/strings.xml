@@ -2,6 +2,7 @@
     <string name="app_name">AppPaises</string>
 
     <string name="title_list">Países del Mundo</string>
+    <string name="empty_list">Países no encontrados</string>
 
     <string name="menu_next">Siguiente</string>
     <string name="menu_back">Atras</string>
