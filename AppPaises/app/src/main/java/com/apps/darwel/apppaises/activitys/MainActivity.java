@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.apps.darwel.apppaises.R;
+import com.apps.darwel.apppaises.models.Constant;
 import com.apps.darwel.apppaises.models.Country;
 import com.apps.darwel.apppaises.webservice.CountryFetcher;
 
@@ -26,6 +28,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final int MENU_NEXT = Menu.FIRST;
     private static final int MENU_BACK = Menu.FIRST+1;
     private static final int MENU_FIND = Menu.FIRST+2;
+    private static final int NUM_RESULTS_PER_PAGE=8;
+    private int TOTAL_RESULTS;
     private ListView listCountrys;
     private TextView empty;
     private ProgressDialog progressDialog;
@@ -41,8 +45,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }else{
                 CountryAdapter adapter = new CountryAdapter(context,
                         R.layout.listview_item_row,countrys);
-                View header = (View) getLayoutInflater().inflate(R.layout.list_header_row,null);
-                listCountrys.addHeaderView(header);
+
+                if(listCountrys.findViewById(R.id.header_label) == null) {
+                    Log.i("info","inicializando header");
+                    View header = (View) getLayoutInflater().inflate(R.layout.list_header_row,null);
+                    listCountrys.addHeaderView(header);
+                }
+
                 listCountrys.setAdapter(adapter);
             }
         }
@@ -60,7 +69,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onResume(){
         super.onResume();
-        loadCountrys();
+        int startFrom = getIntent().getIntExtra(Constant.STARTFROM_EXTRA,1);
+        loadCountrys(startFrom,MainActivity.NUM_RESULTS_PER_PAGE);
     }
 
     @Override
@@ -80,9 +90,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
 
+        Intent intent = null;
         switch (item.getItemId()){
             case MainActivity.MENU_NEXT:
-                Toast.makeText(MainActivity.this, "next", Toast.LENGTH_SHORT).show();
+                intent = new Intent(this,MainActivity.class);
+                if(TOTAL_RESULTS<getIntent().getIntExtra(Constant.STARTFROM_EXTRA,1)+
+                        MainActivity.NUM_RESULTS_PER_PAGE){
+                    intent.putExtra(Constant.STARTFROM_EXTRA,1);
+                }else {
+                    intent.putExtra(Constant.STARTFROM_EXTRA,
+                            getIntent().getIntExtra(Constant.STARTFROM_EXTRA, 1) +
+                                    MainActivity.NUM_RESULTS_PER_PAGE);
+                }
+                startActivity(intent);
                 return true;
             case MainActivity.MENU_BACK:
                 Toast.makeText(MainActivity.this, "back", Toast.LENGTH_SHORT).show();
@@ -94,7 +114,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 return super.onOptionsItemSelected(item);
         }
     }
-    public void loadCountrys(){
+
+    public void loadCountrys(final int startfrom, final int numResults){
 
         final CountryFetcher cf = new CountryFetcher();
 
@@ -104,11 +125,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         new Thread(){
             @Override
             public void run(){
-                ArrayList arrListCoun = cf.getCountrys();
-                countrys = new Country[arrListCoun.size()];
-                for(int i = 0; i < arrListCoun.size(); i++){
-                    countrys[i] = (Country) arrListCoun.get(i);
-                }
+                countrys = cf.getCountrys(startfrom,numResults);
+                TOTAL_RESULTS = cf.getTOTAL();
                 handler.sendEmptyMessage(0);
             }
         }.start();
