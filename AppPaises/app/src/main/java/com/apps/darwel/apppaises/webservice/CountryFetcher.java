@@ -2,6 +2,7 @@ package com.apps.darwel.apppaises.webservice;
 
 import android.util.Log;
 
+import com.apps.darwel.apppaises.activitys.MainActivity;
 import com.apps.darwel.apppaises.models.Country;
 import com.apps.darwel.apppaises.models.Currency;
 
@@ -16,21 +17,30 @@ import java.util.ArrayList;
  */
 public class CountryFetcher {
     private WebService wbs;
+    private int TOTAL;
 
     public CountryFetcher() {
         this.wbs = new WebService();
     }
 
-    public ArrayList<Country> getCountrys(){
+    public Country[] getCountrys(int startfrom, int numResults){
         JSONArray countrys = wbs.getContries();
-        ArrayList<Country> arrayCountry = new ArrayList<Country>();
 
-        for(int i = 0; i < countrys.length(); i++){
+        this.setTOTAL(countrys.length());
+
+        int max = startfrom + numResults;
+        if( (startfrom + numResults) >= countrys.length() ){
+            max = countrys.length();
+        }
+        int j = 0;
+        Country arrayCountry[] = new Country[max-startfrom];
+        Log.i("info","inicio en "+startfrom+" finalizo en "+max+" de un total de "+countrys.length());
+        for(int i = startfrom; i < max; i++){
             try {
                 JSONObject objCountry = (JSONObject) countrys.getJSONObject(i);
                 Country c = new Country();
                 c.setName(objCountry.getString("Name"));
-                arrayCountry.add(c);
+                arrayCountry[j++] = c;
             }catch (JSONException ex){
                 Log.e("error","CountryFecher - JSONException en el metodo getCountrys "+ex.getMessage());
             }
@@ -63,5 +73,13 @@ public class CountryFetcher {
         }
 
         return c;
+    }
+
+    public int getTOTAL() {
+        return TOTAL;
+    }
+
+    public void setTOTAL(int TOTAL) {
+        this.TOTAL = TOTAL;
     }
 }
